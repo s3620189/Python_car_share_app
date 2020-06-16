@@ -1,0 +1,85 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <title>Booking histry</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/alert.js') }}"></script>
+  </head>
+  <body>
+    <div class="container p-3 my-3 border bg-primary text-white">
+      <h1>Booking history</h1>
+			<div class="text-md-right">
+        <div class="dropdown">
+          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            {{ data["account"]["username"] }} 
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container p-3 my-3" id="msg"></div>
+
+
+    <div class="container p-3 my-3">
+			<ul class="nav nav-tabs">
+			  <li class="nav-item">
+			    <a class="nav-link active disabled" href="#">rentals history</a>
+			  </li>
+			  <li class="nav-item">
+			    <a class="nav-link" href="/search"> Go to search</a>
+			  </li>
+			  <li class="nav-item">
+			    <a class="nav-link" href="carsInfo">carsInfo</a>
+			  </li>
+			</ul>
+		</div>
+    <div class="container p-3 my-3">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>User name #</th>
+            <th>Rental Time</th>
+            <th>Book Hours</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Cancel</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in data["bookings"] %}
+          <tr>
+            <td>{{ "#%04d" % booking["account"][username] }}</td>
+            <td>{{ booking["pickup_time"].strftime("%a, %d %b %Y %H:%M") }}</td>
+            <td>{{ booking["hours"] }}</td>
+            <td>{{ "$%.2f" | format(booking["amount"]) }}</td>
+            <td>{{ booking["state"] | capitalize }}</td>
+            <td>
+              {% if booking['state'] == 'reserved' %}
+              <a type="button" class="btn btn-danger btn-sm" href="/cancel?id={{ booking['id'] }}">&times;</a>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td colspan="5">
+              Spec: {{ booking["car"]["make"] }} |
+                    {{ booking["car"]["body_type"] }} |
+                    {{ booking["car"]["colour"] }} |
+                    {{ booking["car"]["seats"] }} seats |
+                    {{ booking["car"]["location"] }} |
+                    {{ "$%.2f" | format(booking["car"]["hourly_rate"]) }}/hr
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

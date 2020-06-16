@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Cars on Google Maps</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='js/alert.js') }}"></script>
+  <script>
+    function showGMaps() {
+        var properties = {
+          center: new google.maps.LatLng({{ data.map_centre.latitude }}, {{ data.map_centre.longitude }}),
+          zoom: 13
+          };
+          var gmaps = new google.maps.Map(document.getElementById("gmaps"), properties);
+          {% for car in data[ "cars" ] %}
+          addCar(gmaps, {{ car.latitude }}, {{ car.longitude }},
+            '<a href="/reservation?id={{ car.id }}">Car {{ "#%04d" % car.id }}</a> | {{ car.make }} | {{ car.body_type }} | {{ car.colour }} | {{ car.seats }} seats | {{ car.location }} | {{ "$%.2f/hr" | format(car.hourly_rate) }}'
+          );
+          {% endfor %}
+    };
+
+    function addCar(map, lat, lng, spec) {
+      var marker = new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: map
+      });
+
+      var infowindow = new google.maps.InfoWindow({
+        content: spec
+      });
+
+      google.maps.event.addListener(marker, 'click', function () {
+        infowindow.open(map, marker);
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container p-3 my-3 border bg-primary text-white">
+    <h1>Cars on Google Maps</h1>
+    <div class="text-md-right">
+      <div class="dropdown">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          {{ data["account"]["first_name"] }} {{ data["account"]["last_name"] }}
+        </button>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="/logout">Log out</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container p-3 my-3" id="msg"></div>
+  <div class="container p-3 my-3">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link" href="/bookings">Booking history</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/cars">Cars available</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active disabled" href="#">Cars on Google Maps</a>
+      </li>
+      {% if data.account.role == "admin" %}
+        <li class="nav-item">
+			    <a class="nav-link" href="/account">Account list</a>
+        </li>
+        {% endif %}
+    </ul>
+  </div>
+  <div class="container p-3 my-3">
+    <form class="form-inline" action="/maps" method="post">
+      <label for="mk" class="mb-2 mr-sm-2">Make</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="mk" name="mk" placeholder="All"
+        value="{{ data['search']['make'] }}">
+      <label for="bt" class="mb-2 mr-sm-2">Body type</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="bt" name="bt" placeholder="All"
+        value="{{ data['search']['body_type'] }}">
+      <label for="cl" class="mb-2 mr-sm-2">Colour</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="cl" name="cl" placeholder="All"
+        value="{{ data['search']['colour'] }}">
+      <label for="st" class="mb-2 mr-sm-2">Seats</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="st" name="st" placeholder="All"
+        value="{{ data['search']['seats'] }}">
+      <label for="lc" class="mb-2 mr-sm-2">Location</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="lc" name="lc" placeholder="All"
+        value="{{ data['search']['location'] }}">
+      <label for="hm" class="mb-2 mr-sm-2">Min hourly rate</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="hm" name="hm" placeholder="-"
+        value="{{ data['search']['hourly_rate_min'] }}">
+      <label for="hx" class="mb-2 mr-sm-2">Max hourly rate</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="hx" name="hx" placeholder="-"
+        value="{{ data['search']['hourly_rate_max'] }}">
+      <button type="submit" class="btn btn-outline-primary mb-2">Search</button>
+    </form>
+    <div id="gmaps" style="width:100%;height:400px;"></div>
+  </div>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7OqrDLbMN_3hHim-QliaNHAZnFm3lw7M&callback=showGMaps"></script>
+</body>
+
+</html>

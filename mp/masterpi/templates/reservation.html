@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Reservation</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/alert.js') }}"></script>
+  </head>
+  <body>
+    <div class="container p-3 my-3 border bg-primary text-white">
+      <h1>Reservation</h1>
+			<div class="text-md-right">
+        <div class="dropdown">
+          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            {{ data["account"]["first_name"] }} {{ data["account"]["last_name"] }}
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container p-3 my-3" id="msg"></div>
+    <div class="container p-3 my-3">
+			<ul class="nav nav-tabs">
+			  <li class="nav-item">
+			    <a class="nav-link" href="/bookings">Booking history</a>
+			  </li>
+			  <li class="nav-item">
+			    <a class="nav-link" href="/cars">Cars available</a>
+			  </li>
+			  <li class="nav-item">
+			    <a class="nav-link" href="/maps">Cars on Google Maps</a>
+        </li>
+        {% if data.account.role == "admin" %}
+        <li class="nav-item">
+			    <a class="nav-link" href="/account">Account list</a>
+        </li>
+        {% endif %}
+			</ul>
+    </div>
+    <div class="container p-3 my-3">
+      <form action="/reservation" method="post">
+        <input type="hidden" name="cid" value="{{ data['car']['id'] }}">
+        <div class="form-group">
+          <label for="no">Car no</label>
+          <input type="text" class="form-control" id="no" value="{{ '#%04d' % data['car']['id'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="mk">Make</label>
+          <input type="text" class="form-control" id="mk" value="{{ data['car']['make'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="bt">Body type</label>
+          <input type="text" class="form-control" id="bt" value="{{ data['car']['body_type'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="cl">Colour</label>
+          <input type="text" class="form-control" id="cl" value="{{ data['car']['colour'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="st">Seats</label>
+          <input type="text" class="form-control" id="st" value="{{ data['car']['seats'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="lc">Location</label>
+          <input type="text" class="form-control" id="lc" value="{{ data['car']['location'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="rt">Hourly rate</label>
+          <input type="text" class="form-control" id="rt" value="{{ data['car']['hourly_rate'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="pt">Pickup time</label>
+          <input type="text" class="form-control" id="pt" name="pt" placeholder="YYYY-MM-DD HH:MM">
+        </div>
+        <div class="form-group">
+          <label for="hr">Hours</label>
+          <input type="text" class="form-control" id="hr" name="hr">
+        </div>
+        <button type="submit" class="btn btn-outline-primary">Confirm</button>
+      </form>
+    </div>
+    <script>
+      $(document).ready(function() {
+        if ('{{ error }}' == 'True')
+          showAlert('failure', 'Incorrect reservation details!');
+      });
+    </script>
+  </body>
+</html>

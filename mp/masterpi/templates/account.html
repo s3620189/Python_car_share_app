@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Account list</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='js/alert.js') }}"></script>
+  <style>
+    .search-bar,
+    .search-bar .item {
+      display: flex;
+      display: -webkit-flex;
+      flex-wrap: wrap;
+    }
+
+    .search-bar .item {
+      line-height: 32px;
+    }
+
+    .search-bar .item input {
+      width: 200px;
+    }
+
+    .search-bar label,
+    .search-bar .el-input {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container p-3 my-3 border bg-primary text-white">
+    <h1>Account list</h1>
+    <div class="text-md-right">
+      <div class="dropdown">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          {{ data["account"]["first_name"] }} {{ data["account"]["last_name"] }}
+        </button>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="/logout">Log out</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container p-3 my-3" id="msg"></div>
+  <div class="container p-3 my-3">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link" href="#">Booking history</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/cars">Cars available</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/maps">Cars on Google Maps</a>
+      </li>
+      {% if data.account.role == "admin" %}
+      <li class="nav-item">
+        <a class="nav-link active disabled" href="/account">Account list</a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+  <div class="container p-3 my-3" id="app">
+    <div class="search-bar">
+      <div class="item">
+        <label for="ac" class="mb-2 mr-sm-2">Account</label>
+        <input type="text" class="form-control mb-2 mr-sm-3" id="ac" v-model="searchForm.id"
+          placeholder="Please enter id">
+      </div>
+      <div class="item">
+        <label for="us" class="mb-2 mr-sm-2">Username</label>
+        <input type="text" class="form-control mb-2 mr-sm-3" id="us" v-model="searchForm.username"
+          placeholder="Please enter Username">
+      </div>
+      <div class="item">
+        <label for="fn" class="mb-2 mr-sm-2">First name</label>
+        <input type="text" class="form-control mb-2 mr-sm-3" id="fn" v-model="searchForm.first_name"
+          placeholder="Please enter first name">
+      </div>
+      <div class="item">
+        <label for="ln" class="mb-2 mr-sm-2">Last name</label>
+        <input type="text" class="form-control mb-2 mr-sm-3" id="ln" v-model="searchForm.last_name"
+          placeholder="Please enter last name">
+      </div>
+      <div class="item">
+        <label for="em" class="mb-2 mr-sm-2">Email</label>
+        <input type="text" class="form-control mb-2 mr-sm-3" id="em" v-model="searchForm.email"
+          placeholder="Please enter email">
+      </div>
+      <div class="item">
+        <label for="ro" class="mb-2 mr-sm-2">Role</label>
+        <input type="text" class="form-control mb-2 mr-sm-3" id="ro" v-model="searchForm.role"
+          placeholder="Please enter role">
+      </div>
+      <button style="margin-right: 10px;" @click="search" class="btn btn-outline-primary mb-2">Search</button>
+      {% if data.account.role == "admin" %}
+      <button @click="addUser" class="btn btn-outline-primary mb-2">+ Add account</button>
+      {% endif %}
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Account #</th>
+          <th>Username</th>
+          <th>First name</th>
+          <th>Last name</th>
+          <th>Email</th>
+          <th>Role</th>
+          {% if data.account.role == "admin" %}
+          <th>Operating</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in data.users %}
+        <tr>
+          <td>{{ "#%04d" % user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.first_name }}</td>
+          <td>{{ user.last_name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          {% if data.account.role == "admin" %}
+          <th>
+            <el-button @click="editUser({{user|safe}})" type="text">Edit</el-button>
+            <el-button @click="delUser({{user|safe}})" type="text">Delete</el-button>
+          </th>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <el-dialog :close-on-click-modal="false" :top="'30px'" @close="close" :title="action==='edit'?'Edit account':'Add account'"
+      :visible.sync="dialogVisible">
+      <el-form :model="form" :label-width="'100px'">
+        <el-form-item required v-if="action=== 'edit'" label="ID">
+          <span v-text="form.id"></span>
+        </el-form-item>
+        <el-form-item required label="Username">
+          <el-input v-model="form.username" autocomplete="off" placeholder="Please enter username"></el-input>
+        </el-form-item>
+        <el-form-item v-if="action=== 'add'" required label="Password">
+          <el-input v-model="form.password" autocomplete="off" placeholder="Please enter password"></el-input>
+        </el-form-item>
+        <el-form-item required label="First name">
+          <el-input v-model="form.first_name" autocomplete="off" placeholder="Please enter first name"></el-input>
+        </el-form-item>
+        <el-form-item required label="Last name">
+          <el-input v-model="form.last_name" autocomplete="off" placeholder="Please enter last name"></el-input>
+        </el-form-item>
+        <el-form-item required label="Email">
+          <el-input v-model="form.email" autocomplete="off" placeholder="Please enter email"></el-input>
+        </el-form-item>
+        <el-form-item required label="Role">
+          <el-input v-model="form.role" autocomplete="off" placeholder="Please enter role"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submit">Confirm</el-button>
+      </div>
+    </el-dialog>
+  </div>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        dialogVisible: false,
+        action: '',
+        form: {
+          id: undefined,
+          username: undefined,
+          password: undefined,
+          first_name: undefined,
+          last_name: undefined,
+          email: undefined,
+          role: undefined
+        },
+        searchForm: {
+          id: undefined,
+          username: undefined,
+          password: undefined,
+          first_name: undefined,
+          last_name: undefined,
+          email: undefined,
+          role: undefined
+        },
+      },
+      methods: {
+        search: function () {
+          var searchStrList = [], searchStr;
+          var href = "http://".concat(window.location.host, window.location.pathname);
+          for (var key in this.searchForm) {
+            if (this.searchForm.hasOwnProperty(key) && typeof this.searchForm[ key ] !== "undefined") {
+              var val = this.searchForm[ key ];
+              searchStrList.push("".concat(key, "=", val))
+            }
+          }
+          if (searchStrList.length) {
+            searchStr = searchStrList.join("&")
+          }
+          console.log(searchStr, href)
+          if (!searchStr) {
+            window.location.href = href
+            return
+          }
+          window.location.href = "".concat(href, "?", searchStr)
+        },
+        close: function () {
+          this.form = {
+            id: undefined,
+            username: undefined,
+            first_name: undefined,
+            last_name: undefined,
+            email: undefined,
+            role: undefined
+          };
+          this.action = ''
+        },
+        addUser: function () {
+          this.dialogVisible = true;
+          this.action = 'add'
+        },
+        editUser: function (user) {
+          this.dialogVisible = true;
+          this.form = user;
+          this.action = 'edit'
+        },
+        submit: function () {
+          if (this.action === 'edit') {
+            this.postData('/editUser', this.form)
+            return
+          }
+          this.postData('/addUser', this.form)
+        },
+        delUser: function (user) {
+          this.$confirm('This will permanently delete the data. Continue?', 'Warning', {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'warning'
+          }).then(() => {
+            this.postData('/deleteUser', { id: user.id })
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: 'Delete canceled'
+            });
+          });
+          console.log(user);
+        },
+        postData: function (url, formData) {
+          var _this = this;
+          console.log(formData)
+          $.ajax({
+            type: 'POST',
+            url: url,
+            data: JSON.stringify(formData),
+            dataType: "json",
+            contentType: "application/json",
+            success: function (res) {
+              console.log(res);
+              if (res.code !== 0) {
+                _this.$message({
+                  type: 'error',
+                  message: res.msg || 'operation failed'
+                });
+                return
+              }
+              _this.dialogVisible = false;
+              _this.$message({
+                type: 'success',
+                message: 'Successful operation'
+              });
+              window.location.reload()
+            },
+            error: function (data) {
+              _this.$message({
+                type: 'error',
+                message: data.msg || 'operation failed'
+              });
+            }
+          })
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>

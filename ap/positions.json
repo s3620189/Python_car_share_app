@@ -1,0 +1,17 @@
+{
+    "1": {
+        "location": "Box Hill",
+        "latitude": -37.822153,
+        "longitude": 145.128934
+    },
+    "2": {
+        "location": "Blackburn",
+        "latitude": -37.821106,
+        "longitude": 145.149885
+    },
+    "3": {
+        "location": "Burwood",
+        "latitude": -37.850014,
+        "longitude": 145.114129
+    }
+}

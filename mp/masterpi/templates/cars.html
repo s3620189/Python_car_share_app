@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Cars available</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='js/alert.js') }}"></script>
+</head>
+
+<body>
+  <div class="container p-3 my-3 border bg-primary text-white">
+    <h1>Cars available</h1>
+    <div class="text-md-right">
+      <div class="dropdown">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          {{ data.account.first_name }} {{ data.account.last_name }}
+        </button>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="/logout">Log out</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container p-3 my-3" id="msg"></div>
+  <div class="container p-3 my-3">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link" href="/bookings">Booking history</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active disabled" href="#">Cars available</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/maps">Cars on Google Maps</a>
+      </li>
+      {% if data.account.role == "admin" %}
+      <li class="nav-item">
+        <a class="nav-link" href="/account">Account list</a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+  <div class="container p-3 my-3" id="app">
+    <form class="form-inline" action="/cars" method="post">
+      <label for="mk" class="mb-2 mr-sm-2">Make</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="mk" name="mk" placeholder="All"
+        value="{{ data['search']['make'] }}">
+      <label for="bt" class="mb-2 mr-sm-2">Body type</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="bt" name="bt" placeholder="All"
+        value="{{ data['search']['body_type'] }}">
+      <label for="cl" class="mb-2 mr-sm-2">Colour</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="cl" name="cl" placeholder="All"
+        value="{{ data['search']['colour'] }}">
+      <label for="st" class="mb-2 mr-sm-2">Seats</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="st" name="st" placeholder="All"
+        value="{{ data['search']['seats'] }}">
+      <label for="lc" class="mb-2 mr-sm-2">Location</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="lc" name="lc" placeholder="All"
+        value="{{ data['search']['location'] }}">
+      <label for="hm" class="mb-2 mr-sm-2">Min hourly rate</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="hm" name="hm" placeholder="-"
+        value="{{ data['search']['hourly_rate_min'] }}">
+      <label for="hx" class="mb-2 mr-sm-2">Max hourly rate</label>
+      <input type="text" class="form-control mb-2 mr-sm-3" id="hx" name="hx" placeholder="-"
+        value="{{ data['search']['hourly_rate_max'] }}">
+      <button type="submit" class="btn btn-outline-primary mb-2">Search</button>
+    </form>
+    {% if data.account.role == "admin" %}
+    <button @click="addCar" class="btn btn-outline-primary mb-2" style="margin-bottom:5px;">+ Add car</button>
+    {% endif %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Car #</th>
+          <th>Make</th>
+          <th>Body type</th>
+          <th>Colour</th>
+          <th>Seats</th>
+          <th>Location</th>
+          <th>Hourly rate</th>
+          <th>Reserve</th>
+          {% if data.account.role == "admin" %}
+          <th>Operating</th>
+          {% endif %}
+
+        </tr>
+      </thead>
+      <tbody>
+        {% for car in data.cars %}
+        <tr>
+          <td>{{ "#%04d" % car["id"] }}</td>
+          <td>{{ car.make }}</td>
+          <td>{{ car.body_type }}</td>
+          <td>{{ car.colour }}</td>
+          <td>{{ car.seats }}</td>
+          <td>{{ car.location }}</td>
+          <td>{{ "$%.2f/hr" | format(car.hourly_rate) }}</td>
+          {% if car.car_condition  %}
+          <td>
+            <a type="button" disabled="disabled" class="btn btn-success btn-sm"
+              href="/reservation?id={{ car['id'] }}">&radic;</a>
+          </td>
+          {% else %}
+          <td>
+            Unusual vehicle condition
+          </td>
+          {% endif %}
+          {% if data.account.role == "admin" %}
+          <th>
+            <el-button @click="editCar({{car|safe}})" type="text">Edit</el-button>
+            <el-button @click="delCar({{car|safe}})" type="text">Delete</el-button>
+          </th>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <el-dialog :close-on-click-modal="false" :top="'30px'" @close="close" :title="action==='edit'?'Edit car':'Add car'" :visible.sync="dialogVisible">
+      <el-form :model="form" :label-position="'right'" :label-width="'100px'">
+        <el-form-item v-if="action==='edit'" label="ID">
+          <span v-text="form.id"></span>
+        </el-form-item>
+        <el-form-item required label="Make">
+          <el-input v-model="form.make" autocomplete="off" placeholder="Please enter make"></el-input>
+        </el-form-item>
+        <el-form-item required label="Body type">
+          <el-input v-model="form.body_type" autocomplete="off" placeholder="Please enter body type"></el-input>
+        </el-form-item>
+        <el-form-item required label="Colour">
+          <el-input v-model="form.colour" autocomplete="off" placeholder="Please enter colour"></el-input>
+        </el-form-item>
+        <el-form-item required label="Seats">
+          <el-input v-model="form.seats" autocomplete="off" placeholder="Please enter seats"></el-input>
+        </el-form-item>
+        <el-form-item required label="Hourly rate">
+          <el-input v-model="form.hourly_rate" autocomplete="off" placeholder="Please enter hourly rate"></el-input>
+        </el-form-item>
+        <el-form-item required label="Location">
+          <el-input v-model="form.location" autocomplete="off" placeholder="Please enter location"></el-input>
+        </el-form-item>
+        <el-form-item required label="Latitude">
+          <el-input v-model="form.latitude" autocomplete="off" placeholder="Please enter latitude"></el-input>
+        </el-form-item>
+        <el-form-item required label="Longitude">
+          <el-input v-model="form.longitude" autocomplete="off" placeholder="Please enter longitude"></el-input>
+        </el-form-item>
+        <el-form-item required label="Condition">
+          <el-input v-model="form.car_condition" autocomplete="off" placeholder="Please enter condition"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submit">Confirm</el-button>
+      </div>
+    </el-dialog>
+  </div>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        dialogVisible: false,
+        action: '',
+        form: {
+          id: undefined,
+          make: undefined,
+          body_type: undefined,
+          colour: undefined,
+          seats: undefined,
+          location: undefined,
+          hourly_rate: undefined,
+          latitude: undefined,
+          longitude: undefined,
+          car_condition: undefined,
+        }
+      },
+      methods: {
+        close: function () {
+          this.form = {
+            id: undefined,
+            make: undefined,
+            body_type: undefined,
+            colour: undefined,
+            seats: undefined,
+            location: undefined,
+            hourly_rate: undefined,
+            latitude: undefined,
+            longitude: undefined,
+            car_condition: undefined,
+          };
+          this.action = ''
+        },
+        addCar: function () {
+          this.dialogVisible = true;
+          this.action = 'add'
+        },
+        editCar: function (car) {
+          this.dialogVisible = true;
+          this.form = car;
+          this.action = 'edit'
+        },
+        submit: function () {
+          if (this.action === 'edit') {
+            this.postData('/editCar', this.form)
+            return
+          }
+          this.postData('/addCar', this.form)
+        },
+        delCar: function (car) {
+          this.$confirm('This will permanently delete the data. Continue?', 'Warning', {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'warning'
+          }).then(() => {
+            this.postData('/deleteCar', { id: car.id })
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: 'Delete canceled'
+            });
+          });
+          console.log(car);
+        },
+        postData: function (url, formData) {
+          var _this = this;
+          console.log(formData)
+          $.ajax({
+            type: 'POST',
+            url: url,
+            data: JSON.stringify(formData),
+            dataType: "json",
+            contentType: "application/json",
+            success: function (res) {
+              console.log(res);
+              if (res.code !== 0) {
+                _this.$message({
+                  type: 'error',
+                  message: res.msg || 'operation failed'
+                });
+                return
+              }
+              _this.dialogVisible = false;
+              _this.$message({
+                type: 'success',
+                message: 'Successful operation'
+              });
+              window.location.reload()
+            },
+            error: function (data) {
+              _this.$message({
+                type: 'error',
+                message: data.msg || 'operation failed'
+              });
+            }
+          })
+        }
+
+      }
+    })
+  </script>
+</body>
+
+</html>
